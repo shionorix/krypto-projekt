@@ -3,7 +3,7 @@
 import hashlib
 import secrets
 
-def fromStrToBinary(bytes: bytes) -> str:
+def fromBytesToBinary(bytes: bytes) -> str:
     '''Converts bytes to binary bits string.'''
     binaryList = []
     for byte in bytes:
@@ -19,17 +19,17 @@ def generateKeyPair() -> tuple[list[bytes], list[bytes]]:
         publicKey.append([hashlib.sha256(secretKey[i][0]).digest(), hashlib.sha256(secretKey[i][1]).digest()])
     return (secretKey, publicKey)
 
-def sign(message: str, secretKey: str) -> list[bytes]:
+def sign(message: str, secretKey: list[bytes]) -> list[bytes]:
     '''Generates signature for the message.'''
     signature = []
-    messageHash = fromStrToBinary(hashlib.sha256(message.encode('utf-8')).digest())
+    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest())
     for i in range(256):
         signature.append(secretKey[i][int(messageHash[i])])
     return signature
 
 def verifySignature(signature: list[bytes], message: str, publicKey: list[bytes]) -> bool: 
     '''Returns True if signature is compatible with public key, False otherwise.'''
-    messageHash = fromStrToBinary(hashlib.sha256(message.encode('utf-8')).digest())
+    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest())
     for i in range(len(signature)):
         elementHash = hashlib.sha256(signature[i]).digest()
         if elementHash != publicKey[i][int(messageHash[i])]:
