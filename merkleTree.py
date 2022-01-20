@@ -1,4 +1,3 @@
-from ntpath import join
 import lamportSignature
 import hashlib
 
@@ -28,6 +27,8 @@ class MerkleTree:
         for node in reversed(range(2**treeHeight - 1)):
             self.nodes[node] = hashlib.sha256(self.nodes[2*(node+1)-1] + self.nodes[2*(node+1)]).digest()
 
+        for id,node in enumerate(self.nodes):
+            print(f'Node no. {id}: {node.hex()}')
 
         self.merklePublicKey = self.nodes[0]
         return
@@ -43,12 +44,12 @@ class MerkleTree:
         
 
         path = []
-        curr_node = 2**self.height-1 + self.messageCount
+        curr_node = 2**self.height + self.messageCount
         for h in range(self.height):
             if curr_node % 2 == 0:
-                path.append(self.nodes[curr_node-1])
+                path.append(self.nodes[curr_node])
             else:
-                path.append(self.nodes[curr_node+1])
+                path.append(self.nodes[curr_node-2])
             curr_node = curr_node//2
 
         self.messageCount += 1
@@ -71,14 +72,14 @@ def verifyMerkle(numberOfMessage, lamportSign, lamportPublicKey, verificationPat
             keyDigest = hashlib.sha256(node+keyDigest).digest()
         else:
             keyDigest = hashlib.sha256(keyDigest+node).digest()
-        idx = idx //2  
+        idx = idx// 2
     
     if keyDigest == merklePublicKey:
         return True
     return False
 
 if __name__ == "__main__":
-    tree = MerkleTree(3)
+    tree = MerkleTree(2)
     merklePublic = tree.getMerkleKeys()[1]
 
     print(f'Merkle public key: {merklePublic.hex()}')
@@ -96,4 +97,16 @@ if __name__ == "__main__":
     print(f'First pair of Lamport signature {signed[1][0].hex()}')
     print(f'Message verification path {[el.hex() for el in signed[3]]}')
     print(f'Message signature verification status: {verifyMerkle(signed[0],signed[1],signed[2],signed[3],message,merklePublic)}')
-    
+
+    signed = tree.signMessage(message)
+    print(f'Message no. {signed[0]}')
+    print(f'First pair of Lamport signature {signed[1][0].hex()}')
+    print(f'Message verification path {[el.hex() for el in signed[3]]}')
+    print(f'Message signature verification status: {verifyMerkle(signed[0],signed[1],signed[2],signed[3],message,merklePublic)}')
+
+    signed = tree.signMessage(message)
+    print(f'Message no. {signed[0]}')
+    print(f'First pair of Lamport signature {signed[1][0].hex()}')
+    print(f'Message verification path {[el.hex() for el in signed[3]]}')
+    print(f'Message signature verification status: {verifyMerkle(signed[0],signed[1],signed[2],signed[3],message,merklePublic)}')
+
