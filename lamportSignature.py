@@ -14,7 +14,7 @@ def generateKeyPair() -> tuple[list[bytes], list[bytes]]:
     '''Generates (secretKey, publicKey) pair, where secretKey is secret and publicKey is public key.'''
     secretKey = []
     publicKey = []
-    for i in range(256):
+    for i in range(256): # generates 256 pairs of random bytes for secret key and hashes each of them to create public key
         secretKey.append([secrets.token_bytes(32), secrets.token_bytes(32)])
         publicKey.append([hashlib.sha256(secretKey[i][0]).digest(), hashlib.sha256(secretKey[i][1]).digest()])
     return (secretKey, publicKey)
@@ -22,15 +22,15 @@ def generateKeyPair() -> tuple[list[bytes], list[bytes]]:
 def sign(message: str, secretKey: list[bytes]) -> list[bytes]:
     '''Generates signature for the message.'''
     signature = []
-    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest())
-    for i in range(256):
+    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest()) # hashes the message and converts the hash from bytes to binary bits
+    for i in range(256): # creates signature by choosing first or second value from secret key, depending on the value of corresponding bit in message hash (for every pair)
         signature.append(secretKey[i][int(messageHash[i])])
     return signature
 
 def verifySignature(signature: list[bytes], message: str, publicKey: list[bytes]) -> bool: 
     '''Returns True if signature is compatible with public key, False otherwise.'''
-    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest())
-    for i in range(len(signature)):
+    messageHash = fromBytesToBinary(hashlib.sha256(message.encode('utf-8')).digest()) # again hashes the message and converts the hash from bytes to binary bits
+    for i in range(len(signature)): # hashes every element in signature and compares it with corresponding value in public key 
         elementHash = hashlib.sha256(signature[i]).digest()
         if elementHash != publicKey[i][int(messageHash[i])]:
             return False
